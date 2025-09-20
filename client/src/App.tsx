@@ -16,6 +16,7 @@ import HabitTracker from "@/components/HabitTracker";
 import NutritionTracker from "@/components/NutritionTracker";
 import ActivityTracker from "@/components/ActivityTracker";
 import SubscriptionPlans from "@/components/SubscriptionPlans";
+import DeviceSync from "@/components/DeviceSync";
 import ThemeToggle from "@/components/ThemeToggle";
 import AppSidebar from "@/components/AppSidebar";
 import NotFound from "@/pages/not-found";
@@ -89,6 +90,7 @@ function AppContent() {
                   <Route path="/habits" component={() => <HabitTracker />} />
                   <Route path="/nutrition" component={() => <NutritionTracker />} />
                   <Route path="/activities" component={() => <ActivityTracker />} />
+                  <Route path="/devices" component={() => <DeviceSync />} />
                   <Route path="/plans" component={() => <SubscriptionPlans />} />
                   <Route component={NotFound} />
                 </Switch>

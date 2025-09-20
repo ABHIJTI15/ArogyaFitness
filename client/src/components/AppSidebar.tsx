@@ -18,6 +18,7 @@ import {
   Target, 
   Utensils, 
   Activity, 
+  Smartphone,
   Crown,
   LogOut,
   Heart,
@@ -49,6 +50,11 @@ const menuItems = [
     title: "Activities",
     url: "/activities",
     icon: Activity,
+  },
+  {
+    title: "Device Sync",
+    url: "/devices",
+    icon: Smartphone,
   },
   {
     title: "Plans",

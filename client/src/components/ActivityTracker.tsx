@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,9 +19,14 @@ import {
   Square,
   Dumbbell,
   Heart,
-  Footprints
+  Footprints,
+  Share2,
+  Video,
+  Users,
+  Trophy,
+  Sparkles
 } from "lucide-react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface WorkoutEntry {
   id: string;
@@ -97,6 +102,8 @@ export default function ActivityTracker({ onActivityAdd }: ActivityTrackerProps)
   const [isAddingActivity, setIsAddingActivity] = useState(false);
   const [isTimerRunning, setIsTimerRunning] = useState(false);
   const [timerSeconds, setTimerSeconds] = useState(0);
+  const [showVideoGuide, setShowVideoGuide] = useState(false);
+  const [selectedExercise, setSelectedExercise] = useState<string | null>(null);
   const [newActivity, setNewActivity] = useState({
     name: '',
     type: 'cardio' as const,
@@ -105,6 +112,17 @@ export default function ActivityTracker({ onActivityAdd }: ActivityTrackerProps)
     intensity: 'medium' as const,
     notes: ''
   });
+
+  // Timer effect
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (isTimerRunning) {
+      interval = setInterval(() => {
+        setTimerSeconds(prev => prev + 1);
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [isTimerRunning]);
 
   // Timer functionality
   const startTimer = () => {

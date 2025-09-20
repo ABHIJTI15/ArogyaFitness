@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,7 +16,11 @@ import {
   TrendingUp,
   MoreHorizontal,
   Edit,
-  Trash2
+  Trash2,
+  Sparkles,
+  Trophy,
+  Zap,
+  Star
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -103,6 +107,9 @@ const colors = [
 export default function HabitTracker({ onHabitUpdate }: HabitTrackerProps) {
   const [habits, setHabits] = useState<Habit[]>(mockHabits);
   const [isAddingHabit, setIsAddingHabit] = useState(false);
+  const [celebratingHabit, setCelebratingHabit] = useState<string | null>(null);
+  const [draggedHabit, setDraggedHabit] = useState<string | null>(null);
+  const confettiRef = useRef<HTMLDivElement>(null);
   const [newHabit, setNewHabit] = useState<{
     name: string;
     description: string;
@@ -117,12 +124,22 @@ export default function HabitTracker({ onHabitUpdate }: HabitTrackerProps) {
     color: 'bg-blue-500'
   });
 
+  const triggerCelebration = (habitId: string) => {
+    setCelebratingHabit(habitId);
+    setTimeout(() => setCelebratingHabit(null), 2000);
+  };
+
   const toggleHabit = (habitId: string) => {
     setHabits(prev => prev.map(habit => {
       if (habit.id === habitId) {
         const completed = !habit.completedToday;
         console.log(`Habit ${habit.name} marked as ${completed ? 'completed' : 'incomplete'}`);
         onHabitUpdate?.(habitId, completed);
+        
+        // Trigger celebration animation for completion
+        if (completed) {
+          triggerCelebration(habitId);
+        }
         
         return {
           ...habit,
@@ -371,18 +388,75 @@ export default function HabitTracker({ onHabitUpdate }: HabitTrackerProps) {
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-4 flex-1">
-                      {/* Completion Toggle */}
-                      <button
+                      {/* Completion Toggle with Celebration */}
+                      <motion.button
                         onClick={() => toggleHabit(habit.id)}
-                        className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${
+                        className={`relative w-8 h-8 rounded-full border-2 flex items-center justify-center transition-colors ${
                           habit.completedToday
                             ? 'bg-primary border-primary text-primary-foreground'
                             : 'border-muted-foreground hover:border-primary'
                         }`}
                         data-testid={`button-toggle-habit-${habit.id}`}
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.95 }}
                       >
-                        {habit.completedToday && <Check className="w-3 h-3" />}
-                      </button>
+                        <AnimatePresence>
+                          {habit.completedToday && (
+                            <motion.div
+                              initial={{ scale: 0, rotate: -180 }}
+                              animate={{ scale: 1, rotate: 0 }}
+                              exit={{ scale: 0, rotate: 180 }}
+                              transition={{ type: "spring", stiffness: 200, damping: 10 }}
+                            >
+                              <Check className="w-4 h-4" />
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                        
+                        {/* Celebration Sparkles */}
+                        <AnimatePresence>
+                          {celebratingHabit === habit.id && (
+                            <>
+                              <motion.div
+                                className="absolute -top-2 -right-2"
+                                initial={{ scale: 0, opacity: 0 }}
+                                animate={{ 
+                                  scale: [0, 1, 0], 
+                                  opacity: [0, 1, 0],
+                                  rotate: [0, 180, 360]
+                                }}
+                                transition={{ duration: 1.5, delay: 0 }}
+                              >
+                                <Sparkles className="w-4 h-4 text-yellow-400" />
+                              </motion.div>
+                              <motion.div
+                                className="absolute -bottom-2 -left-2"
+                                initial={{ scale: 0, opacity: 0 }}
+                                animate={{ 
+                                  scale: [0, 1, 0], 
+                                  opacity: [0, 1, 0],
+                                  rotate: [0, -180, -360]
+                                }}
+                                transition={{ duration: 1.5, delay: 0.3 }}
+                              >
+                                <Star className="w-3 h-3 text-blue-400" />
+                              </motion.div>
+                              <motion.div
+                                className="absolute -top-2 -left-2"
+                                initial={{ scale: 0, opacity: 0 }}
+                                animate={{ 
+                                  scale: [0, 1, 0], 
+                                  opacity: [0, 1, 0],
+                                  rotate: [0, 90, 180]
+                                }}
+                                transition={{ duration: 1.5, delay: 0.6 }}
+                              >
+                                <Zap className="w-3 h-3 text-green-400" />
+                              </motion.div>
+                            </>
+                          )}
+                        </AnimatePresence>
+                      </motion.button>
 
                       {/* Habit Info */}
                       <div className="flex-1">

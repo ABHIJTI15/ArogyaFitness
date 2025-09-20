@@ -16,9 +16,14 @@ import {
   Coffee,
   Clock,
   Search,
-  Trash2
+  Trash2,
+  Camera,
+  Scan,
+  Sparkles,
+  TrendingUp,
+  Zap
 } from "lucide-react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface NutritionEntry {
   id: string;
@@ -110,6 +115,8 @@ export default function NutritionTracker({ onEntryAdd }: NutritionTrackerProps) 
   const [goals] = useState<NutritionGoals>(mockGoals);
   const [isAddingEntry, setIsAddingEntry] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [isScanning, setIsScanning] = useState(false);
+  const [showCamera, setShowCamera] = useState(false);
   const [newEntry, setNewEntry] = useState({
     name: '',
     mealType: 'breakfast' as const,
@@ -178,6 +185,46 @@ export default function NutritionTracker({ onEntryAdd }: NutritionTrackerProps) 
     }));
   };
 
+  const handleBarcodeScanning = () => {
+    setIsScanning(true);
+    console.log('Starting barcode scanning...');
+    
+    // Simulate barcode scanning
+    setTimeout(() => {
+      setIsScanning(false);
+      const scannedFood = {
+        name: 'Scanned Product - Protein Bar',
+        calories: 210,
+        protein: 20,
+        carbs: 15,
+        fat: 8,
+        fiber: 3
+      };
+      selectPopularFood(scannedFood);
+      console.log('Barcode scanned successfully');
+    }, 2000);
+  };
+
+  const handlePhotoCapture = () => {
+    setShowCamera(true);
+    console.log('Opening camera for food photo...');
+    
+    // Simulate photo analysis
+    setTimeout(() => {
+      setShowCamera(false);
+      const analyzedFood = {
+        name: 'Photo Analysis - Mixed Salad',
+        calories: 150,
+        protein: 8,
+        carbs: 12,
+        fat: 6,
+        fiber: 5
+      };
+      selectPopularFood(analyzedFood);
+      console.log('Food photo analyzed successfully');
+    }, 3000);
+  };
+
   const filteredFoods = popularFoods.filter(food =>
     food.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -228,10 +275,43 @@ export default function NutritionTracker({ onEntryAdd }: NutritionTrackerProps) 
               </TabsList>
               
               <TabsContent value="search" className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
+                  <Button
+                    variant="outline"
+                    onClick={handleBarcodeScanning}
+                    disabled={isScanning}
+                    className="h-16 flex flex-col space-y-1"
+                    data-testid="button-barcode-scan"
+                  >
+                    <Scan className={`w-5 h-5 ${isScanning ? 'animate-pulse' : ''}`} />
+                    <span className="text-xs">{isScanning ? 'Scanning...' : 'Scan Barcode'}</span>
+                  </Button>
+                  
+                  <Button
+                    variant="outline"
+                    onClick={handlePhotoCapture}
+                    disabled={showCamera}
+                    className="h-16 flex flex-col space-y-1"
+                    data-testid="button-photo-capture"
+                  >
+                    <Camera className={`w-5 h-5 ${showCamera ? 'animate-pulse' : ''}`} />
+                    <span className="text-xs">{showCamera ? 'Analyzing...' : 'Take Photo'}</span>
+                  </Button>
+                  
+                  <Button
+                    variant="outline"
+                    className="h-16 flex flex-col space-y-1"
+                    data-testid="button-voice-entry"
+                  >
+                    <Sparkles className="w-5 h-5" />
+                    <span className="text-xs">Voice Entry</span>
+                  </Button>
+                </div>
+                
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
                   <Input
-                    placeholder="Search foods..."
+                    placeholder="Search foods or enter a description..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="pl-10"
@@ -240,24 +320,71 @@ export default function NutritionTracker({ onEntryAdd }: NutritionTrackerProps) 
                 </div>
                 
                 <div className="max-h-60 overflow-y-auto space-y-2">
-                  {filteredFoods.map((food, index) => (
-                    <div
-                      key={index}
-                      className="p-3 border rounded-lg cursor-pointer hover-elevate"
-                      onClick={() => selectPopularFood(food)}
-                      data-testid={`food-option-${index}`}
-                    >
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <h4 className="font-medium">{food.name}</h4>
-                          <p className="text-sm text-muted-foreground">
-                            {food.calories} cal, {food.protein}g protein
-                          </p>
+                  <AnimatePresence>
+                    {filteredFoods.map((food, index) => (
+                      <motion.div
+                        key={index}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: 20 }}
+                        transition={{ delay: index * 0.05 }}
+                        className="p-3 border rounded-lg cursor-pointer hover-elevate"
+                        onClick={() => selectPopularFood(food)}
+                        data-testid={`food-option-${index}`}
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                      >
+                        <div className="flex justify-between items-start">
+                          <div className="flex-1">
+                            <h4 className="font-medium">{food.name}</h4>
+                            <div className="flex items-center space-x-4 text-sm text-muted-foreground mt-1">
+                              <span>{food.calories} cal</span>
+                              <span>{food.protein}g protein</span>
+                              <span>{food.carbs}g carbs</span>
+                            </div>
+                          </div>
+                          <Badge variant="secondary" className="bg-primary/10 text-primary">
+                            <Zap className="w-3 h-3 mr-1" />
+                            {food.calories}
+                          </Badge>
                         </div>
-                        <Badge variant="secondary">{food.calories} cal</Badge>
-                      </div>
-                    </div>
-                  ))}
+                      </motion.div>
+                    ))}
+                  </AnimatePresence>
+                  
+                  {/* AI Suggestions */}
+                  {searchQuery && filteredFoods.length === 0 && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="text-center py-8"
+                    >
+                      <Sparkles className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
+                      <p className="text-sm text-muted-foreground mb-3">
+                        No exact matches found. Let AI analyze "{searchQuery}"
+                      </p>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => {
+                          // Simulate AI analysis
+                          const aiFood = {
+                            name: `AI Analyzed - ${searchQuery}`,
+                            calories: Math.floor(Math.random() * 300) + 100,
+                            protein: Math.floor(Math.random() * 20) + 5,
+                            carbs: Math.floor(Math.random() * 30) + 10,
+                            fat: Math.floor(Math.random() * 15) + 3,
+                            fiber: Math.floor(Math.random() * 8) + 2
+                          };
+                          selectPopularFood(aiFood);
+                        }}
+                        data-testid="button-ai-analyze"
+                      >
+                        <Sparkles className="w-4 h-4 mr-2" />
+                        Analyze with AI
+                      </Button>
+                    </motion.div>
+                  )}
                 </div>
               </TabsContent>
               
